@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guide d'installation & configuration du Bot Discord</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            background: linear-gradient(135deg, #ff9a9e 10%, #fad0c4 100%);
+            color: #6b3939;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: calc(90% - 220px);
+            margin-left: 230px;
+            padding: 30px 20px 60px 20px;
+            background: #fff;
+            border-radius: 15px;
+            min-height: 100vh;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+            animation: fadeInUp 1s;
+            transition: box-shadow 0.4s, background 0.4s;
+        }
+        .container:hover {
+            box-shadow: 0 16px 32px rgba(255,107,107,0.13);
+            background: #fffbe9;
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 220px;
+            height: 100vh;
+            background: #fff;
+            box-shadow: 2px 0 8px rgba(0,0,0,0.07);
+            padding: 20px 0 0 0;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: slideInLeft 1s;
+        }
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-60px);}
+            to { opacity: 1; transform: translateX(0);}
+        }
+        .sidebar nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .sidebar nav ul li {
+            margin: 10px 0;
+            width: 100%;
+        }
+        .sidebar nav ul li a {
+            display: block;
+            text-align: center;
+            padding: 10px 0;
+            color: #333;
+            border-radius: 8px;
+            font-size: 1.08em;
+            text-decoration: none;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .sidebar nav ul li a::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 0;
+            background: linear-gradient(90deg, #ff6b6b 0%, #ffd600 100%);
+            opacity: 0.15;
+            transition: width 0.4s cubic-bezier(.4,2,.6,1);
+            z-index: 0;
+        }
+        .sidebar nav ul li a:hover::before, .sidebar nav ul li a.active::before {
+            width: 100%;
+        }
+        .sidebar nav ul li a span {
+            position: relative;
+            z-index: 1;
+        }
+        .sidebar nav ul li a:hover, .sidebar nav ul li a.active {
+            background: #ffe3e3;
+            color: #ff6b6b !important;
+            box-shadow: 0 2px 8px #ffd6d6;
+        }
+        .progress-bar {
+            position: fixed;
+            left: 220px;
+            bottom: 0;
+            width: calc(100% - 220px);
+            height: 6px;
+            background: linear-gradient(90deg, #ffe3e3 0%, #fffbe9 100%);
+            border-radius: 3px 0 0 3px;
+            z-index: 20;
+            box-shadow: 0 0 8px #ffd6d6;
+        }
+        .progress-bar .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #ffd600, #00ffab);
+            width: 0;
+            border-radius: 3px 0 0 3px;
+            transition: width 0.3s cubic-bezier(.4,2,.6,1);
+            box-shadow: 0 0 8px #ffd6d6;
+        }
+        .step-nav {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        .step-btn {
+            background: #ff6b6b;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 18px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .step-btn:disabled {
+            background: #ffd6d6;
+            color: #aaa;
+            cursor: not-allowed;
+        }
+        section {
+            margin-top: 45px;
+            opacity: 0;
+            transform: translateY(40px) scale(0.97);
+            animation: fadeInUp 0.8s ease-in-out forwards;
+            border-left: 5px solid #ff6b6b;
+            padding-left: 18px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+            transition: transform 0.3s, box-shadow 0.3s, background 0.3s, border-left 0.3s;
+        }
+        section.animate {
+            opacity: 1;
+            transform: translateY(0) scale(1.01);
+            box-shadow: 0 12px 32px rgba(255, 107, 107, 0.13);
+            background: #fffbe9;
+            border-left: 7px solid #ffd600;
+        }
+        section:not(:first-child) {
+            animation-delay: 0.2s;
+        }
+        .content h1, .content h2, .content h3 {
+            text-align: center;
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            animation: fadeInTitle 1.2s;
+        }
+        @keyframes fadeInTitle {
+            from { opacity: 0; letter-spacing: 0.2em;}
+            to { opacity: 1; letter-spacing: 0;}
+        }
+        .content h1 { font-size: 2.3em; }
+        .content h2 { font-size: 1.5em; }
+        .content h3 { font-size: 1.15em; }
+        .note, .info, .warning, .tipbox {
+            margin: 18px 0;
+            padding: 13px;
+            border-radius: 7px;
+            font-size: 1em;
+            box-shadow: 0 2px 8px #f4f4f4;
+            animation: fadeIn 1.2s;
+            border-left: 5px solid #ffd600;
+        }
+        .note { background: #fff3cd; border-left-color: #ffe066; }
+        .info { background: #d1ecf1; border-left-color: #00bcd4; }
+        .warning { background: #f8d7da; border-left-color: #ff6b6b; }
+        .tipbox { background: #e3ffe3; border-left-color: #00ffab; }
+        .faq-item h3 {
+            background: #ffe3e3;
+            border-radius: 8px;
+            padding: 8px 0;
+            margin-bottom: 0;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.3s;
+            box-shadow: 0 2px 8px #ffe3e3;
+        }
+        .faq-item h3:hover {
+            background: #ffd6d6;
+            color: #ff6b6b;
+            box-shadow: 0 4px 16px #ffd6d6;
+            transform: scale(1.02);
+        }
+        .faq-item .faq-answer {
+            display: none;
+            background: #fff8f0;
+            border-radius: 0 0 8px 8px;
+            padding: 10px 15px;
+            font-size: 1em;
+            animation: fadeIn 0.7s;
+            transition: all 0.5s ease-in-out;
+        }
+        .folder-structure {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            margin: 15px 0;
+            animation: fadeIn 1.2s;
+        }
+        .highlight {
+            background-color: #ffeb3b;
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: inline-block;
+            animation: fadeIn 1.2s;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px) scale(0.98);}
+            to { opacity: 1; transform: translateY(0) scale(1);}
+        }
+        @keyframes fadeIn {
+            from { opacity: 0;}
+            to { opacity: 1;}
+        }
+        @keyframes fadeOut {
+            from { opacity: 1;}
+            to { opacity: 0;}
+        }
+        @keyframes bounceIn {
+            0% { opacity: 0; transform: scale(0.8);}
+            60% { opacity: 1; transform: scale(1.05);}
+            100% { opacity: 1; transform: scale(1);}
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-60px);}
+            to { opacity: 1; transform: translateX(0);}
+        }
+        @media (max-width: 900px) {
+            .sidebar { position: static; width: 100%; height: auto; box-shadow: none; flex-direction: row; justify-content: center; align-items: flex-start; padding: 10px 0;}
+            .container { margin-left: 0; width: 100%;}
+            .progress-bar { left: 0; width: 100%;}
+        }
+        @media (max-width: 600px) {
+            .content { padding: 10px;}
+            .sidebar nav ul li { margin: 10px 0;}
+        }
+        /* Animation pour les étapes */
+        .step-anim {
+            animation: bounceIn 1.2s;
+        }
+        /* Animation pour les suggestions */
+        .suggestion {
+            background: #e3ffe3;
+            border-left: 5px solid #00ffab;
+            padding: 10px 15px;
+            border-radius: 7px;
+            margin: 18px 0;
+            font-size: 1em;
+            animation: fadeIn 1.2s;
+        }
+        /* Animation pour les avertissements */
+        .avertissement {
+            background: #fff3cd;
+            border-left: 5px solid #ffd600;
+            padding: 10px 15px;
+            border-radius: 7px;
+            margin: 18px 0;
+            font-size: 1em;
+            animation: fadeIn 1.2s;
+        }
+        /* Animation pour les suivis */
+        .suivi {
+            background: #d1ecf1;
+            border-left: 5px solid #00bcd4;
+            padding: 10px 15px;
+            border-radius: 7px;
+            margin: 18px 0;
+            font-size: 1em;
+            animation: fadeIn 1.2s;
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <nav>
+            <ul>
+                <li><a href="#intro" class="toc-link"><span>Introduction</span></a></li>
+                <li><a href="#discorddev" class="toc-link"><span>Créer le bot Discord</span></a></li>
+                <li><a href="#nodejs" class="toc-link"><span>Installer Node.js</span></a></li>
+                <li><a href="#vscode" class="toc-link"><span>Installer VS Code</span></a></li>
+                <li><a href="#configurer" class="toc-link"><span>Configurer le bot</span></a></li>
+                <li><a href="#modules" class="toc-link"><span>Installer les modules</span></a></li>
+                <li><a href="#organisation" class="toc-link"><span>Organisation du dossier</span></a></li>
+                <li><a href="#lancer" class="toc-link"><span>Lancer le bot</span></a></li>
+                <li><a href="#faq" class="toc-link"><span>FAQ & Astuces</span></a></li>
+            </ul>
+        </nav>
+        <div class="progress-bar"><div class="progress"></div></div>
+    </aside>
+    <main class="container">
+        <section id="intro" class="content section-animated step-anim">
+            <h1 class="pulse">🚀 Guide d'installation & d'utilisation du Bot Discord</h1>
+            <p>
+                Ce guide complet vous accompagne pas à pas pour installer, configurer et personnaliser votre bot Discord.<br>
+                <span class="highlight">Tout est expliqué, même pour les débutants !</span>
+            </p>
+            <div class="note">
+                <strong>But :</strong> Permettre à n'importe qui de cloner le projet GitHub, de le configurer et de le faire fonctionner sans se perdre.<br>
+                <strong>Pour chaque étape :</strong> lisez bien les encadrés, suivez la checklist, et consultez les exemples.
+            </div>
+            <div class="suivi">
+                <b>Suivi :</b> <span id="suivi-intro">Commencez par lire chaque étape, cochez vos avancées sur papier ou dans un outil de suivi.</span>
+            </div>
+        </section>
+        <section id="discorddev" class="content section-animated step-anim">
+            <h2>Créer son bot sur Discord Developer Portal</h2>
+            <ol>
+                <li>Rendez-vous sur <a href="https://discord.com/developers/applications" target="_blank">Discord Developer Portal</a>.</li>
+                <li>Cliquez sur <b>New Application</b>, donnez un nom à votre bot.</li>
+                <li>Dans l’onglet <b>Bot</b>, cliquez sur <b>Add Bot</b>.</li>
+                <li>Copiez le <b>Token</b> du bot (gardez-le secret !).</li>
+                <li>Dans <b>OAuth2 > URL Generator</b>, cochez <b>bot</b> et <b>applications.commands</b>, puis donnez les permissions nécessaires (ex: Administrator).</li>
+                <li>Copiez le lien généré et invitez le bot sur votre serveur.</li>
+            </ol>
+            <div class="warning"><b>Ne partagez jamais votre token !</b></div>
+            <div class="suggestion">💡 <b>Suggestion :</b> Notez votre token dans un gestionnaire de mots de passe.</div>
+            <div class="suivi">⏳ <b>Suivi :</b> Vérifiez que le bot apparaît bien dans la liste des membres de votre serveur Discord.</div>
+        </section>
+        <section id="nodejs" class="content section-animated step-anim">
+            <h2>Installer Node.js</h2>
+            <ol>
+                <li>Téléchargez Node.js (version 18+) sur <a href="https://nodejs.org/" target="_blank">nodejs.org</a>.</li>
+                <li>Installez-le (suivez l’assistant).</li>
+                <li>Vérifiez l’installation :<br>
+                    <code>node -v</code> doit afficher une version ≥ 18<br>
+                    <code>npm -v</code> doit fonctionner
+                </li>
+            </ol>
+            <div class="avertissement">⚠️ <b>Avertissement :</b> Si vous avez déjà Node.js, vérifiez la version. Désinstallez l’ancienne version si besoin.</div>
+            <div class="suggestion">💡 <b>Astuce :</b> Utilisez <code>nvm</code> pour gérer plusieurs versions de Node.js.</div>
+        </section>
+        <section id="vscode" class="content section-animated step-anim">
+            <h2>Installer Visual Studio Code</h2>
+            <ol>
+                <li>Téléchargez <a href="https://code.visualstudio.com/" target="_blank">Visual Studio Code</a>.</li>
+                <li>Installez-le puis ouvrez le dossier du bot avec <b>Fichier &gt; Ouvrir Dossier</b>.</li>
+            </ol>
+            <div class="suggestion">💡 <b>Astuce :</b> Installez les extensions <b>ESLint</b> et <b>Prettier</b> pour un code plus propre.</div>
+        </section>
+        <section id="configurer" class="content section-animated step-anim">
+            <h2>Configurer le bot</h2>
+            <ol>
+                <li>Copiez <code>config.example.json</code> en <code>config.json</code>.</li>
+                <li>Remplacez le <b>token</b> par le vôtre dans <code>config.json</code>.</li>
+                <li>Remplacez <b>guildId</b> par l’ID de votre serveur dans <code>config.json</code> et <code>deployCommands.js</code>.</li>
+                <li>Remplacez les <b>Spotify secrets</b> dans <code>.env</code> :<br>
+                    <code>SPOTIFY_CLIENT_ID=...<br>SPOTIFY_CLIENT_SECRET=...</code>
+                </li>
+                <li>Remplacez les <b>IDs de salons</b> :
+                    <ul>
+                        <li><b>suggestion.js</b> ligne 23 (pour les messages de suggestion)</li>
+                        <li><b>bug.js</b> ligne 23 (pour les messages de signialement)</li>
+                        <li><b>prenuim.js</b> ligne 50 (pour avoir les demandes de prenuim)</li>
+                        <li><b>staff.js</b> ligne 46 (pour avoir les demandes de moderation)</li>
+                        <li><b>index.js</b> ligne 228 (pour les niveaux)</li>
+                    </ul>
+                </li>
+                <li>Remplacez l’ID du <b>rôle staff</b> dans <b>accepter.js</b> ligne 115.</li>
+            </ol>
+            <div class="info">Pour obtenir un ID Discord : activez le mode développeur dans Discord, puis clic droit &gt; "Copier l'identifiant".</div>
+            <div class="avertissement">⚠️ <b>Avertissement :</b> Après chaque modification d'ID, <b>redémarrez le bot</b> pour appliquer les changements.</div>
+            <div class="suivi">✅ <b>Suivi :</b> Testez chaque commande concernée après modification des IDs.</div>
+        </section>
+        <section id="modules" class="content section-animated step-anim">
+            <h2>Installer tous les modules Node.js</h2>
+            <ol>
+                <li>Dans le terminal, tapez :<br>
+                    <code>npm install</code>
+                </li>
+                <li>Modules principaux utilisés : <code>discord.js</code>, <code>distube</code>, <code>@distube/spotify</code>, <code>@distube/youtube</code>, <code>dotenv</code>, <code>canvas</code>, etc.</li>
+            </ol>
+            <div class="tipbox">Si une erreur, supprimez <code>node_modules</code> et <code>package-lock.json</code> puis relancez <code>npm install</code>.</div>
+            <div class="suggestion">💡 <b>Astuce :</b> Pour mettre à jour tous les modules, utilisez <code>npm update</code>.</div>
+            <div class="suivi">⏳ <b>Suivi :</b> Vérifiez que le dossier <code>node_modules</code> est bien créé et que <code>npm start</code> ne retourne pas d'erreur de dépendance.</div>
+        </section>
+        <section id="organisation" class="content section-animated step-anim">
+            <h2>Organisation du dossier</h2>
+            <div class="folder-structure">
+<pre>
+bot/
+├── commands/         # Toutes les commandes du bot (catégories)
+├── data/             # Données persistantes (RPG, boutique, etc.)
+├── logs/             # Logs générés par le bot
+├── temp/             # Fichiers temporaires
+├── .env              # Secrets Spotify
+├── config.json       # Configuration principale (token, guildId)
+├── deployCommands.js # Script de déploiement des slash commands
+├── history.json      # Historique des commandes
+├── index.js          # Point d'entrée du bot
+├── interactionHandler.js
+├── support.json      # Données support
+├── users.json        # Données utilisateurs
+</pre>
+            </div>
+            <div class="note">Ne déplacez pas les fichiers sans adapter les chemins dans le code.</div>
+            <div class="suggestion">💡 <b>Astuce :</b> Organisez vos commandes par catégorie pour une meilleure lisibilité.</div>
+            <div class="suivi">⏳ <b>Suivi :</b> Vérifiez que chaque dossier contient bien les fichiers attendus.</div>
+        </section>
+        <section id="lancer" class="content section-animated step-anim">
+            <h2>Lancer le bot</h2>
+            <ol>
+                <li>Dans le terminal, lancez :<br>
+                    <code>node index.js</code>
+                </li>
+                <li>Le bot doit apparaître en ligne sur votre serveur Discord.</li>
+                <li>Pour déployer les commandes slash :<br>
+                    <code>npm run deploy</code> ou <code>node deployCommands.js</code>
+                </li>
+            </ol>
+            <div class="note">Consultez les logs dans <code>logs/</code> en cas d’erreur.</div>
+            <div class="avertissement">⚠️ <b>Avertissement :</b> Si le bot ne démarre pas, vérifiez les étapes précédentes et les logs.</div>
+            <div class="suivi">✅ <b>Suivi :</b> Testez les commandes principales (<code>/ping</code>, <code>/help</code>, <code>/play</code>, etc.).</div>
+        </section>
+        <!-- Ajout d'une section explicative sur toutes les commandes -->
+        <section id="all-commands" class="content section-animated step-anim">
+            <h2>📚 Toutes les commandes du bot par catégorie</h2>
+            <div class="note">
+                Voici la liste complète des commandes, classées par catégorie, avec leur usage et des exemples. Utilisez <code>/help</code> sur Discord pour un menu interactif.
+            </div>
+            <div class="suivi">
+                <b>Suivi :</b> Cochez les commandes que vous avez testées et lisez bien les descriptions pour découvrir toutes les fonctionnalités du bot.
+            </div>
+            <div class="suggestion">
+                💡 <b>Astuce :</b> Utilisez la touche <kbd>Tab</kbd> pour l'autocomplétion des commandes slash sur Discord.
+            </div>
+            <div class="faq-item">
+                <h3>🎮 RPG</h3>
+                <div class="faq-answer">
+                    <ul>
+                        <li><b>/rpg</b> — Affiche le menu d'aide RPG</li>
+                        <li><b>/rpg-start [classe]</b> — Crée ton personnage (Guerrier, Mage, Archer)</li>
+                        <li><b>/rpg-profil</b> — Affiche ton profil RPG</li>
+                        <li><b>/rpg-boutique</b> — Voir la boutique par catégorie</li>
+                        <li><b>/rpg-marchant [objet]</b> — Acheter un objet</li>
+                        <li><b>/rpg-equiper [objet]</b> — Équiper une arme ou une armure</li>
+                        <li><b>/rpg-utiliser [objet]</b> — Utiliser une potion</li>
+                        <li><b>/rpg-compagnon [action] [nom]</b> — Gérer tes compagnons</li>
+                        <li><b>/rpg-quete</b> — Voir ta quête journalière</li>
+                        <li><b>/rpg-quete-valider</b> — Valider ta quête du jour</li>
+                        <li><b>/rpg-adventure</b> — Voir les aventures spéciales</li>
+                        <li><b>/rpg-classement</b> — Voir le classement</li>
+                        <li><b>/rpg-boss [difficulte]</b> — Affronter un boss</li>
+                        <li><b>/rpg-vagues</b> — Mode survie vagues de monstres</li>
+                        <li><b>/rpg-forge [objet]</b> — Améliorer un objet</li>
+                        <li><b>/rpg-coffre</b> — Ouvrir un coffre</li>
+                        <li><b>/rpg-duel [adversaire]</b> — Défier un joueur</li>
+                        <li><b>/rpg-succes</b> — Voir tes succès</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="faq-item">
+                <h3>💬 Utilitaires & Infos</h3>
+                <div class="faq-answer">
+                    <ul>
+                        <li><b>/help</b> — Menu d'aide interactif</li>
+                        <li><b>/ping</b> — Latence du bot</li>
+                        <li><b>/botinfo</b> — Infos sur le bot</li>
+                        <li><b>/serverinfo</b> — Infos sur le serveur</li>
+                        <li><b>/userinfo [user]</b> — Infos sur un utilisateur</li>
+                        <li><b>/stats</b> — Statistiques d'utilisation des commandes</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="faq-item">
+                <h3>🎵 Musique</h3>
+                <div class="faq-answer">
+                    <ul>
+                        <li><b>/play [query]</b> — Joue une musique</li>
+                        <li><b>/pause</b> — Met en pause</li>
+                        <li><b>/resume</b> — Reprend la lecture</li>
+                        <li><b>/skip</b> — Passe à la suivante</li>
+                        <li><b>/stop</b> — Arrête la musique</li>
+                        <li><b>/volume [0-100]</b> — Change le volume</li>
+                        <li><b>/loop [off/song/queue]</b> — Boucle</li>
+                        <li><b>/queue</b> — Affiche la file d'attente</li>
+                        <li><b>/shuffle</b> — Mélange la file</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="faq-item">
+                <h3>🛡️ Modération</h3>
+                <div class="faq-answer">
+                    <ul>
+                        <li><b>/ban [user]</b> — Bannir un utilisateur</li>
+                        <li><b>/kick [user]</b> — Expulser un utilisateur</li>
+                        <li><b>/mute [user] [durée]</b> — Mute un utilisateur</li>
+                        <li><b>/unmute [user]</b> — Unmute</li>
+                        <li><b>/warn [user] [raison]</b> — Avertir</li>
+                        <li><b>/addrole [user] [role]</b> — Ajouter un rôle</li>
+                        <li><b>/removerole [user] [role]</b> — Retirer un rôle</li>
+                        <li><b>/rename [user] [nickname]</b> — Renommer</li>
+                        <li><b>/clear [nombre]</b> — Supprimer des messages</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="faq-item">
+                <h3>🎲 Jeux</h3>
+                <div class="faq-answer">
+                    <ul>
+                        <li><b>/coinflip</b> — Lancer une pièce</li>
+                        <li><b>/dice [faces]</b> — Lancer un dé</li>
+                        <li><b>/nombre</b> — Deviner un nombre</li>
+                        <li><b>/pendu [mot]</b> — Jeu du pendu</li>
+                        <li><b>/hangman [mot]</b> — Jeu du pendu (anglais)</li>
+                        <li><b>/minesweeper [lignes] [colonnes] [mines]</b> — Démineur</li>
+                        <li><b>/tictactoe [opponent]</b> — Morpion</li>
+                        <li><b>/rps [choice]</b> — Pierre-papier-ciseaux</li>
+                        <li><b>/trivia</b> — Quiz</li>
+                        <li><b>/wordscramble [mot]</b> — Mots mélangés</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="faq-item">
+                <h3>💸 Argent & Points</h3>
+                <div class="faq-answer">
+                    <ul>
+                        <li><b>/points</b> — Voir vos points ou le classement</li>
+                        <li><b>/level</b> — Voir votre niveau et classement</li>
+                        <li><b>/list-money</b> — Liste des devises</li>
+                        <li><b>/convert-money [montant] [origine] [cible]</b> — Convertir une devise</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="faq-item">
+                <h3>🆘 Support & Transmissions</h3>
+                <div class="faq-answer">
+                    <ul>
+                        <li><b>/suggestion [description]</b> — Soumettre une suggestion</li>
+                        <li><b>/bug [description]</b> — Signaler un bug</li>
+                        <li><b>/moderation [probleme] [description] [personnes]</b> — Demande de support modération</li>
+                        <li><b>/prenuim [ko_fi] [gmail] [userdiag]</b> — Demande premium</li>
+                        <li><b>/accepter [type]</b> — Accepter/refuser une demande</li>
+                        <li><b>/secours</b> — Numéros d'urgence</li>
+                        <li><b>/ddu</b> — Guide DDU</li>
+                        <li><b>/userdiag</b> — Guide UserDiag</li>
+                        <li><b>/hyper</b> — Infos Hyper-Threading</li>
+                        <li><b>/help</b> — Menu d'aide interactif</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="faq-item">
+                <h3>🎉 Promotions & Divers</h3>
+                <div class="faq-answer">
+                    <ul>
+                        <li><b>/promo</b> — Voir les promotions</li>
+                        <li><b>/eartrumpet</b> — Promotion EarTrumpet</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="note">
+                <b>Exemples d'utilisation :</b><br>
+                <code>/rpg-marchant Excalibur</code> — Achète l'objet "Excalibur"<br>
+                <code>/ban @Utilisateur</code> — Bannit un utilisateur<br>
+                <code>/play Never Gonna Give You Up</code> — Joue la musique demandée
+            </div>
+            <div class="avertissement">
+                ⚠️ <b>Important :</b> Certaines commandes nécessitent des permissions spécifiques (modération, gestion des rôles, etc).<br>
+                Utilisez <b>/help</b> pour voir les commandes accessibles selon votre rôle.
+            </div>
+            <div class="suivi">
+                <b>Suivi :</b> Testez chaque commande, notez les erreurs ou suggestions, et partagez vos retours pour améliorer le bot !
+            </div>
+        </section>
+        <section id="faq" class="content section-animated step-anim">
+            <h2>FAQ & Astuces</h2>
+            <div class="faq-item">
+                <h3>Le bot ne démarre pas ?</h3>
+                <div class="faq-answer">
+                    <ul>
+                        <li>Vérifiez le token dans <code>config.json</code>.</li>
+                        <li>Vérifiez que tous les fichiers de données existent et sont valides (pas de JSON cassé).</li>
+                        <li>Vérifiez que ffmpeg est bien installé et accessible.</li>
+                        <li>Consultez les logs pour plus d'infos.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="faq-item">
+                <h3>Une commande ne fonctionne pas ?</h3>
+                <div class="faq-answer">
+                    <ul>
+                        <li>Vérifiez que la commande est bien présente dans le dossier <code>commands/</code>.</li>
+                        <li>Relancez le script de déploiement des commandes slash.</li>
+                        <li>Vérifiez les permissions du bot sur Discord.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="faq-item">
+                <h3>Comment obtenir un ID Discord ?</h3>
+                <div class="faq-answer">
+                    <ol>
+                        <li>Activez le mode développeur dans Discord (Paramètres &gt; Avancés).</li>
+                        <li>Clic droit sur le salon/serveur/rôle/utilisateur &gt; "Copier l'identifiant".</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="faq-item">
+                <h3>Comment ajouter une commande ?</h3>
+                <div class="faq-answer">
+                    <ol>
+                        <li>Créez un fichier dans <code>commands/</code> ou une sous-catégorie.</li>
+                        <li>Suivez la structure d'une commande existante (<code>module.exports = { data, async execute }</code>).</li>
+                        <li>Déployez les commandes slash.</li>
+                        <li>Testez la commande sur Discord.</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="faq-item">
+                <h3>Comment personnaliser les salons/roles ?</h3>
+                <div class="faq-answer">
+                    <ul>
+                        <li>Remplacez les IDs dans le code source (voir étape "Configurer le bot").</li>
+                        <li>Redémarrez le bot après toute modification d'ID.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="faq-item">
+                <h3>Comment installer tous les modules si j'ai une erreur ?</h3>
+                <div class="faq-answer">
+                    <ul>
+                        <li>Supprimez <code>node_modules</code> et <code>package-lock.json</code> puis relancez <code>npm install</code>.</li>
+                        <li>Vérifiez que vous avez bien Node.js v18+.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="faq-item">
+                <h3>Comment fonctionne la structure des commandes ?</h3>
+                <div class="faq-answer">
+                    <ul>
+                        <li>Chaque commande est un fichier JS dans <code>commands/</code> ou ses sous-dossiers.</li>
+                        <li>La structure type :<br>
+                            <code>module.exports = { data: ..., async execute(interaction) { ... } }</code>
+                        </li>
+                        <li>Pour les commandes slash, déployez-les avec <code>deployCommands.js</code>.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="faq-item">
+                <h3>Comment voir les logs et les erreurs ?</h3>
+                <div class="faq-answer">
+                    <ul>
+                        <li>Consultez le dossier <code>logs/</code> pour les logs détaillés.</li>
+                        <li>Les erreurs critiques s'affichent aussi dans la console.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="faq-item">
+                <h3>Comment mettre à jour le bot ?</h3>
+                <div class="faq-answer">
+                    <ul>
+                        <li>Faites <code>git pull</code> pour récupérer les dernières modifications du projet.</li>
+                        <li>Relancez <code>npm install</code> si de nouveaux modules sont ajoutés.</li>
+                        <li>Redéployez les commandes slash si besoin.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+    <script>
+        // Animation d'apparition des sections
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate');
+                }
+            });
+        });
+        document.querySelectorAll('section').forEach((section) => {
+            observer.observe(section);
+        });
+
+        // Sidebar navigation + progress bar
+        const tocLinks = document.querySelectorAll('.toc-link');
+        window.addEventListener('scroll', () => {
+            let fromTop = window.scrollY + 100;
+            tocLinks.forEach(link => {
+                let section = document.querySelector(link.getAttribute('href'));
+                if (
+                    section.offsetTop <= fromTop &&
+                    section.offsetTop + section.offsetHeight > fromTop
+                ) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+            // Progress bar
+            const docHeight = document.body.scrollHeight - window.innerHeight;
+            const scrollPercent = (window.scrollY / docHeight) * 100;
+            document.querySelector('.progress').style.width = scrollPercent + '%';
+        });
+
+        // Smooth scroll for navigation links
+        document.querySelectorAll('.toc-link').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // FAQ accordéon
+        document.querySelectorAll('.faq-item h3').forEach(item => {
+            item.addEventListener('click', event => {
+                const faqAnswer = item.nextElementSibling;
+                if (faqAnswer.style.display === 'block') {
+                    faqAnswer.style.animation = 'fadeOut 0.5s';
+                    setTimeout(() => faqAnswer.style.display = 'none', 400);
+                } else {
+                    faqAnswer.style.display = 'block';
+                    faqAnswer.style.animation = 'fadeIn 0.5s';
+                }
+            });
+        });
+
+        // Animation survol sur les étapes
+        document.querySelectorAll('.step-anim').forEach(section => {
+            section.addEventListener('mouseenter', () => {
+                section.style.boxShadow = '0 16px 32px #ffd6d6';
+                section.style.background = '#fffbe9';
+            });
+            section.addEventListener('mouseleave', () => {
+                section.style.boxShadow = '';
+                section.style.background = '';
+            });
+        });
+    </script>
+</body>
+</html>
